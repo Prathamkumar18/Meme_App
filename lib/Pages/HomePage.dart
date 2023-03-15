@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:MemeDroid/Services/ApiService.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:share_plus/share_plus.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -9,8 +11,11 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  bool like = false;
-  bool dislike = false;
+  ApiService service = ApiService();
+  String? data;
+  Future<void> getData() async {
+    data = await service.fetchNewMeme();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +28,7 @@ class _HomePageState extends State<HomePage> {
               begin: Alignment.topLeft,
               end: Alignment.topRight,
               colors: [
-            Color.fromARGB(255, 255, 0, 85),
+            Color.fromARGB(255, 196, 35, 89),
             Color.fromARGB(255, 204, 102, 47)
           ])),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -35,34 +40,56 @@ class _HomePageState extends State<HomePage> {
           child: Text(
             "Memes",
             style: TextStyle(
-                fontSize: 40, color: Colors.white, fontWeight: FontWeight.bold),
+                fontSize: 40,
+                color: Color.fromARGB(255, 32, 183, 191),
+                fontWeight: FontWeight.bold),
           ),
         ),
         SizedBox(
           height: 20,
         ),
         Container(
-          height: 580,
+          height: 600,
           width: 390,
           child: Card(
-            color: Color.fromARGB(255, 248, 232, 232),
+            color: Color.fromARGB(255, 249, 220, 220),
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
             child: Column(children: [
+              SizedBox(
+                height: 20,
+              ),
               Container(
                 height: 500,
-                padding: EdgeInsets.all(25),
-                width: 380,
+                width: 360,
                 decoration: BoxDecoration(
+                  border: Border.all(color: Colors.black),
                   borderRadius: BorderRadius.circular(30),
-                  // image: DecorationImage(
-                  //     image: AssetImage("Assets/applogo1.png"),
-                  //     fit: BoxFit.cover),
                 ),
-                child: Shimmer.fromColors(
-                    baseColor: Color.fromARGB(255, 190, 26, 26),
-                    highlightColor: Color.fromARGB(255, 48, 184, 222),
-                    child: dummyShimmer()),
+                child: FutureBuilder(
+                    future: getData(),
+                    builder: ((context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.done) {
+                        return Container(
+                          height: 480,
+                          padding: EdgeInsets.all(25),
+                          width: 360,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(30),
+                            image: DecorationImage(
+                                image: NetworkImage(data!), fit: BoxFit.fill),
+                          ),
+                          // child:
+                        );
+                      } else if (snapshot.connectionState ==
+                          ConnectionState.waiting) {
+                        return Shimmer.fromColors(
+                            baseColor: Color.fromARGB(255, 0, 17, 255),
+                            highlightColor: Color.fromARGB(255, 70, 255, 243),
+                            child: dummyShimmer());
+                      } else
+                        return Container();
+                    })),
               ),
               SizedBox(
                 height: 5,
@@ -70,73 +97,44 @@ class _HomePageState extends State<HomePage> {
               Container(
                 height: 60,
                 width: 380,
-                child: Row(children: [
-                  SizedBox(
-                    width: 40,
-                  ),
-                  InkWell(
-                    onTap: () {
-                      setState(() {
-                        like = !like;
-                        dislike = false;
-                      });
-                    },
-                    child: Icon(
-                      like ? Icons.thumb_up : Icons.thumb_up_alt_outlined,
-                      size: 40,
-                      color:
-                          like ? Colors.green : Color.fromARGB(255, 1, 53, 118),
-                    ),
-                  ),
-                  SizedBox(
-                    width: 20,
-                  ),
-                  InkWell(
-                    onTap: () {
-                      setState(() {
-                        dislike = !dislike;
-                        like = false;
-                      });
-                    },
-                    child: Icon(
-                      dislike
-                          ? Icons.thumb_down
-                          : Icons.thumb_down_alt_outlined,
-                      size: 40,
-                      color: dislike
-                          ? Colors.red
-                          : Color.fromARGB(255, 1, 53, 118),
-                    ),
-                  ),
-                  SizedBox(
-                    width: 170,
-                  ),
-                  Icon(
-                    Icons.share,
-                    size: 40,
-                    color: Color.fromARGB(255, 1, 53, 118),
-                  ),
-                ]),
+                child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      Container(
+                        height: 40,
+                        width: 200,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              getData();
+                            });
+                          },
+                          child: Text(
+                            "More Fun",
+                            style: TextStyle(fontSize: 23),
+                          ),
+                          style: ButtonStyle(
+                              overlayColor: MaterialStateProperty.all(
+                                  Color.fromARGB(255, 150, 199, 207)),
+                              backgroundColor:
+                                  MaterialStateProperty.all(Colors.black)),
+                        ),
+                      ),
+                      InkWell(
+                        onTap: () {
+                          Share.share(data!);
+                        },
+                        child: Icon(
+                          Icons.share,
+                          size: 40,
+                          color: Color.fromARGB(255, 1, 53, 118),
+                        ),
+                      ),
+                    ]),
               ),
             ]),
           ),
         ),
-        Container(
-          margin: EdgeInsets.only(left: 100, right: 100, top: 20),
-          height: 40,
-          width: 200,
-          child: ElevatedButton(
-            onPressed: () {},
-            child: Text(
-              "More Fun",
-              style: TextStyle(fontSize: 23),
-            ),
-            style: ButtonStyle(
-                overlayColor: MaterialStateProperty.all(
-                    Color.fromARGB(255, 150, 199, 207)),
-                backgroundColor: MaterialStateProperty.all(Colors.black)),
-          ),
-        )
       ]),
     ));
   }
@@ -144,8 +142,8 @@ class _HomePageState extends State<HomePage> {
   Widget dummyShimmer() {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.08),
-        borderRadius: BorderRadius.circular(10),
+        color: Colors.black.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(30),
       ),
     );
   }

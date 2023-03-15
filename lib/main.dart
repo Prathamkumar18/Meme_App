@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:meme_droid/Pages/HomePage.dart';
-
+import 'package:MemeDroid/Pages/HomePage.dart';
+ 
 void main() {
   runApp(MyApp());
 }
